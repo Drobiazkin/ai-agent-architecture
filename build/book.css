@@ -1,0 +1,116 @@
+:root{
+  --text:#1a1a1c; --muted:#5b6570; --bg:#f4f4f6; --paper:#ffffff;
+  --accent:#1f6ff5; --accent2:#7a3ff0; --rule:#e3e3e8; --code-bg:#f6f7f9;
+  --card-bg:#f5f8ff; --card-bar:#1f6ff5; --note-bg:#f7f6f2; --note-bar:#c9a94a;
+  --maxw:52rem;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font:400 18px/1.66 Georgia,"Iowan Old Style","Times New Roman",serif;
+  text-rendering:optimizeLegibility; -webkit-font-smoothing:antialiased;
+  font-feature-settings:"kern","liga";
+}
+/* ---- layout ---- */
+#content{
+  max-width:var(--maxw); margin:0 auto; padding:64px 34px 160px;
+  background:var(--paper); box-shadow:0 0 0 1px var(--rule), 0 24px 60px -40px rgba(0,0,0,.25);
+}
+@media(min-width:1180px){ #content{margin-left:calc(50% - var(--maxw)/2 + 130px)} }
+/* ---- headings ---- */
+h1,h2,h3,h4,h5{font-family:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;line-height:1.22;color:#0f1216}
+h1{font-size:2.05rem;font-weight:800;letter-spacing:-.015em;margin:0 0 .8em;padding-top:.4em}
+#content>h1{margin-top:1.6em;padding-top:1.1em;border-top:3px solid var(--text)}
+#content>h1:first-of-type{border:0;margin-top:0}
+h2{font-size:1.42rem;font-weight:700;letter-spacing:-.01em;margin:2.1em 0 .7em;padding-bottom:.28em;border-bottom:1px solid var(--rule)}
+h3{font-size:1.14rem;font-weight:700;margin:1.7em 0 .55em}
+h4{font-size:1rem;font-weight:700;margin:1.4em 0 .5em;color:var(--muted);text-transform:none}
+h1 .header-anchor,h2 .header-anchor{opacity:0;text-decoration:none;color:var(--accent);margin-left:.35em;font-weight:400;font-size:.7em}
+h1:hover .header-anchor,h2:hover .header-anchor{opacity:.55}
+/* ---- text ---- */
+p{margin:0 0 1.05em}
+#content>p:first-of-type,h1+p,h2+p,h3+p{ }
+a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+strong{font-weight:700;color:#111}
+em{font-style:italic}
+hr{border:0;border-top:1px solid var(--rule);margin:2.4em 0}
+ul,ol{margin:0 0 1.05em;padding-left:1.5em}
+li{margin:.28em 0}
+li>ul,li>ol{margin:.3em 0}
+/* ---- inline code + blocks ---- */
+code,kbd,samp{font-family:"SF Mono",ui-monospace,"JetBrains Mono","Cascadia Code",Menlo,monospace;font-size:.86em}
+:not(pre)>code{background:var(--code-bg);border:1px solid var(--rule);border-radius:5px;padding:.08em .38em;color:#b02a5b;white-space:nowrap}
+pre{background:var(--code-bg);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;overflow-x:auto;margin:0 0 1.3em;line-height:1.5;font-size:.82rem}
+pre code{background:none;border:0;padding:0;color:#1c2530;white-space:pre}
+/* ---- tables ---- */
+.tw,table{margin:0 0 1.4em}
+table{border-collapse:collapse;width:100%;font-family:ui-sans-serif,system-ui,sans-serif;font-size:.83rem;line-height:1.45;display:block;overflow-x:auto}
+thead th{background:#0f1216;color:#fff;font-weight:600;text-align:left}
+th,td{border:1px solid var(--rule);padding:8px 11px;vertical-align:top}
+tbody tr:nth-child(even){background:#fafafb}
+/* ---- blockquote = pattern cards & callouts ---- */
+blockquote{
+  margin:1.5em 0;padding:.2em 1.25em .2em 1.4em;
+  background:var(--card-bg);border-left:4px solid var(--card-bar);border-radius:0 10px 10px 0;
+}
+blockquote h3,blockquote h4{margin-top:.9em;color:#123}
+blockquote>:first-child{margin-top:.7em}
+blockquote>:last-child{margin-bottom:.7em}
+blockquote code:not(pre code){background:#fff}
+/* ---- figures: mermaid + png ---- */
+figure{margin:1.6em 0;text-align:center}
+figure.mermaid{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:18px;overflow-x:auto}
+figure.mermaid svg{max-width:100%;height:auto}
+img{max-width:100%;height:auto;border-radius:8px;display:block;margin:1.5em auto;border:1px solid var(--rule)}
+/* ---- term-notes (на полях главы) ---- */
+.termnotes{
+  margin:1.6em 0 1em;padding:14px 18px 6px;background:var(--note-bg);
+  border-left:4px solid var(--note-bar);border-radius:0 10px 10px 0;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:.8rem;line-height:1.5;color:#33383e;
+}
+.termnotes .termnote{margin:0 0 .6em;padding-left:.2em;text-indent:-.2em}
+.fnback{color:var(--note-bar);text-decoration:none;font-weight:700;margin-right:.15em}
+sup.fnref{line-height:0}
+sup.fnref a{color:var(--accent2);text-decoration:none;font-weight:700;padding:0 .05em}
+sup.fnref a:hover{text-decoration:underline}
+/* ---- sticky TOC ---- */
+#toc{
+  position:fixed;top:0;left:0;width:290px;height:100vh;overflow-y:auto;
+  background:#101319;color:#c7ccd4;padding:22px 14px 60px;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:.76rem;line-height:1.35;
+  transform:translateX(-100%);transition:transform .22s ease;z-index:50;
+}
+@media(min-width:1180px){#toc{transform:none}}
+body.toc-open #toc{transform:none;box-shadow:0 0 40px rgba(0,0,0,.5)}
+.toc-head{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:#6b7482;margin:0 8px 12px}
+#toc a{display:block;color:#b7bdc7;text-decoration:none;padding:3px 8px;border-radius:6px}
+#toc a:hover{background:#1b2029;color:#fff}
+#toc a.toc-l1{margin-top:9px;color:#fff;font-weight:700;font-size:.79rem}
+#toc a.toc-l2{padding-left:18px;color:#9aa2ae;font-size:.74rem}
+#toc-toggle{
+  position:fixed;top:14px;left:14px;z-index:60;width:42px;height:42px;border:0;border-radius:10px;
+  background:#101319;color:#fff;font-size:1.2rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.28)
+}
+@media(min-width:1180px){#toc-toggle{display:none}}
+/* ---- print / PDF ---- */
+@media print{
+  body{background:#fff;font-size:10.5pt;line-height:1.5}
+  #toc,#toc-toggle{display:none!important}
+  #content{margin:0;max-width:none;box-shadow:none;padding:0}
+  @page{margin:18mm 16mm}
+  #content>h1{border-top:0;page-break-before:always;padding-top:0}
+  #content>h1:first-of-type{page-break-before:avoid}
+  #content>h1.chapter-after-part{page-break-before:avoid;break-before:avoid;margin-top:1.2em}
+  h1,h2,h3,h4,h5,h6{page-break-after:avoid;break-after:avoid}
+  /* Полужирный абзац-подпись («Диаграмма …», «На полях главы N») не отрывается от того, что подписывает */
+  p:has(> strong:only-child){page-break-after:avoid;break-after:avoid}
+  figure,table,pre,blockquote,.termnotes{page-break-inside:avoid;break-inside:avoid}
+  /* Диаграмма/картинка не выше печатного поля страницы — влезает целиком одной штукой (меньше пустот и разрывов) */
+  figure.mermaid svg,img{max-height:195mm}
+  p,li{orphans:3;widows:3}
+  thead th{background:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  tbody tr:nth-child(even){background:#f2f2f2!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  blockquote,.termnotes,figure.mermaid,pre{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  a{color:#000;text-decoration:none}
+}

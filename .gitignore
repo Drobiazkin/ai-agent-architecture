@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+build/out/
+*.ots.bak
+__pycache__/
+.venv/
+.idea/
+book/.single.md
+course/.single.md
+build/mmd_batch/

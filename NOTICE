@@ -1,0 +1,165 @@
+The Architecture of AI Agents and LLM Systems
+Patterns, Approaches, and Engineering for Enterprise Automation
+
+and its companion
+
+Practicum: AI Agents by Hand
+
+Copyright (c) 2026 Aleksandr Drobiazkin <aleksandr.drobiazkin@gmail.com>
+Contact: LinkedIn https://www.linkedin.com/in/aleksandr-drobiazkin-501bab263
+All rights reserved except as granted by the licenses below.
+
+--------------------------------------------------------------------------
+LICENSES
+--------------------------------------------------------------------------
+
+This repository is dual-licensed. Which license applies depends on what you
+are using:
+
+1. PROSE, FIGURES, AND DIAGRAMS
+   The text of the book (book/) and the course (course/), together with all
+   figures and diagrams, are licensed under the
+   Creative Commons Attribution-ShareAlike 4.0 International License
+   (CC BY-SA 4.0). Full text: ./LICENSE
+   Canonical: https://creativecommons.org/licenses/by-sa/4.0/
+
+   You are free to share and adapt this material, including commercially,
+   provided that you give appropriate credit and license your derivative
+   works under the same terms.
+
+2. CODE
+   The MIT License (./LICENSE-CODE) applies to:
+
+     - the figure-generation scripts under tools/;
+     - the typesetting pipeline under build/;
+     - every fenced code block in book/ and course/ — that is, every block
+       delimited by triple backticks and tagged with a programming or
+       configuration language (```python, ```java, ```sql, ```bash,
+       ```yaml, ```xml, ```json), together with the comments inside it.
+
+   The boundary is exactly the fence. Everything outside a fenced code
+   block — the prose, the tables, the formulas, the footnotes, and the
+   ```mermaid diagrams (which are illustrations expressed as text, not
+   code) — is part of the work and is licensed under CC BY-SA 4.0.
+
+   Each source file under book/ and course/ carries this split as an SPDX
+   header, so that the licensing travels with the file if it is reused on
+   its own.
+
+   The typesetting pipeline's third-party dependencies are governed by
+   their own licenses; see build/package.json and the respective packages.
+   For third-party components embedded in the built artifacts, see
+   "BUILT ARTIFACTS" below.
+
+--------------------------------------------------------------------------
+ATTRIBUTION
+--------------------------------------------------------------------------
+
+When reusing the prose, figures, or diagrams under CC BY-SA 4.0, attribution
+must include:
+
+  - the author's name: Aleksandr Drobiazkin
+  - the title of the work: "The Architecture of AI Agents and LLM Systems"
+    (or "Practicum: AI Agents by Hand", as applicable)
+  - a link to the source: https://github.com/Drobiazkin/ai-agent-architecture
+  - a link to the license: https://creativecommons.org/licenses/by-sa/4.0/
+  - an indication of whether the material was modified
+
+A suggested attribution line:
+
+  "The Architecture of AI Agents and LLM Systems" by Aleksandr Drobiazkin,
+  licensed under CC BY-SA 4.0. Modified from the original.
+
+--------------------------------------------------------------------------
+ORIGINAL LANGUAGE, TRANSLATION, AND TOOLS
+--------------------------------------------------------------------------
+
+This work was originally written in Russian by the author and subsequently
+translated into English by the author. Both language versions are the
+author's own work; the English text is not a third-party derivative.
+
+AI tools were used in the making of this repository — the prose of both
+editions, and the code alike: the scripts under tools/, the pipeline under
+build/, and the code samples in the text. An assistant (Claude, Anthropic)
+reviewed drafts, flagged errors and inconsistencies, and proposed
+alternative wordings. Every claim, every decision about structure, every
+source, and every sentence as published was chosen, written or rewritten,
+and verified by the author, who takes responsibility for all of it. The
+author asserts authorship of both editions accordingly.
+
+The model is a tool, not a party: it holds no authorship and no rights.
+Anthropic is not affiliated with this work and has not reviewed it, and
+under Anthropic's own terms it assigns to the user whatever rights it may
+hold in a model's output. Where any part of this repository is not
+protected by copyright, the licenses above convey nothing as to that part:
+they are granted to the full extent of the rights the author holds, and are
+not a representation that every line is separately protected.
+
+--------------------------------------------------------------------------
+PROVENANCE
+--------------------------------------------------------------------------
+
+The dates on which the manuscripts existed in a given state are evidenced
+independently of this repository's git history: SHA-256 manifests of the
+manuscripts, timestamped via OpenTimestamps and attested in the Bitcoin
+blockchain. Such an attestation proves that a file with the recorded hash
+existed no later than the attested block — it is evidence of date, not of
+authorship, and it does not by itself establish who wrote the work or that
+the work is original. Authorship rests on the author's assertion here and
+on the record of composition. See ./PROVENANCE.md for the hashes, the
+timestamps, and verification instructions.
+
+--------------------------------------------------------------------------
+THIRD-PARTY MATERIAL
+--------------------------------------------------------------------------
+
+The book cites and discusses published research, specifications, and vendor
+documentation. Such citations are made under the applicable quotation and
+fair-dealing/fair-use provisions; each is attributed at the point of use and
+in the consolidated bibliography (Appendix E). Apart from the material
+listed under "MATERIAL UNDER A COMPATIBLE LICENSE" below and the
+third-party components listed under "BUILT ARTIFACTS" below, no third-party
+text is incorporated, and no third-party material is relicensed by this
+repository. Trademarks and product names are the property of their
+respective owners and are used for identification only.
+
+--------------------------------------------------------------------------
+MATERIAL UNDER A COMPATIBLE LICENSE
+--------------------------------------------------------------------------
+
+Some third-party material is incorporated not under a quotation exception
+but under a license compatible with this work's own:
+
+  - The taxonomy of the "OWASP Top 10 for LLM Applications" (2025) and of
+    the "OWASP Top 10 for Agentic Applications" (2026), reproduced in
+    Chapter 19 (§19.3) and Chapter 12 (§12.5), © the OWASP Foundation,
+    licensed under CC BY-SA 4.0
+    (https://creativecommons.org/licenses/by-sa/4.0/). The categories are
+    reproduced as published; the mapping to this book's sections is the
+    author's own addition.
+
+Because this work is itself licensed under CC BY-SA 4.0, the ShareAlike
+obligation attaching to such material is satisfied.
+
+Note on compatibility, for anyone reusing this work: CC BY-SA 4.0 admits
+material under CC BY, CC0, the public domain, and CC BY-SA 4.0 itself. It
+does NOT admit material under any NonCommercial (NC) or NoDerivatives (ND)
+license — incorporating either would conflict with §2(a)(5)(B) of this
+work's license. No such material is incorporated here.
+
+--------------------------------------------------------------------------
+BUILT ARTIFACTS
+--------------------------------------------------------------------------
+
+The HTML files in this repository are self-contained: the typesetting
+pipeline inlines third-party assets into them. They therefore contain, in
+addition to this work:
+
+  - KaTeX (https://katex.org) — stylesheet and web fonts, embedded.
+    Copyright (c) 2013-2020 Khan Academy and other contributors.
+    Licensed under the MIT License; the full text ships inside each HTML
+    file and is reproduced at ./build/third_party/KATEX-LICENSE.
+
+These components remain under their own licenses and are not relicensed.
+The dual license described above applies to this work's own content, not
+to the embedded third-party assets.
