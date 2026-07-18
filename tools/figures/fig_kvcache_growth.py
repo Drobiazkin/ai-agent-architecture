@@ -7,6 +7,7 @@ Example configuration: 80 layers, d_head = 128, fp16 (2 bytes), batch = 1.
 MHA: 64 KV heads -> 80 GiB at 32,768 tokens.  GQA: 8 KV heads -> 1/8 of MHA.
 """
 
+from pathlib import Path
 import numpy as np
 import matplotlib
 
@@ -93,5 +94,5 @@ fig.text(0.005, -0.015,
          "GQA (8 KV heads) is an 8× reduction relative to MHA (64).",
          fontsize=11, color=GREY, ha="left", va="top")
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_kvcache_growth.png',
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_kvcache_growth.png",
             dpi=120, bbox_inches='tight')

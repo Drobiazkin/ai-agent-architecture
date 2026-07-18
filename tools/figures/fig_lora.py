@@ -6,6 +6,7 @@ weights W = W0 + BA. Footnote gives the parameter-count arithmetic.
 Self-contained: matplotlib + numpy only, DejaVu Sans (matplotlib default).
 """
 
+from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
@@ -116,4 +117,4 @@ ax.text(16, 700,
         "Example: d = k = 4096, r = 8: 16.8M → 65.5K (≈256× fewer).",
         ha="left", va="top", fontsize=11, color=SLATE_700)
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_lora.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_lora.png", dpi=150, bbox_inches='tight')

@@ -5,6 +5,7 @@ result plots) showing that a reasoning model buys quality with per-answer
 compute, versus the same model without reasoning and a larger base model.
 """
 
+from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 
@@ -92,4 +93,4 @@ fig.text(
     ha="center", va="bottom", fontsize=10.5, color=FOOT, linespacing=1.45,
 )
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_test_time_compute.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_test_time_compute.png", dpi=150, bbox_inches='tight')

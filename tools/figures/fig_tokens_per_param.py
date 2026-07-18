@@ -7,6 +7,7 @@ with a dashed reference line at the Chinchilla optimum (~20).
 English-edition recreation of the original figure (matplotlib + numpy only).
 """
 
+from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
@@ -72,4 +73,4 @@ footnote = (
 fig.text(0.5, -0.02, footnote, ha="center", va="top",
          fontsize=10.5, color=FOOT_INK, linespacing=1.4)
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_tokens_per_param.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_tokens_per_param.png", dpi=150, bbox_inches='tight')

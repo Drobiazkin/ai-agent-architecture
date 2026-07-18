@@ -6,6 +6,7 @@ Data: 41.77% specification and system design, 36.94% inter-agent
 misalignment, 21.30% task verification and termination.
 """
 
+from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
@@ -88,7 +89,7 @@ fig.text(
 )
 
 fig.savefig(
-    r"/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_mast_failures.png",
+    Path(__file__).resolve().parents[2] / "book" / "images" / "fig_mast_failures.png",
     dpi=150,
     bbox_inches="tight",
 )

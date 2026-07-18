@@ -9,6 +9,7 @@ Recreated from the original edition with all labels in US English.
 Requires only matplotlib + numpy (DejaVu Sans, matplotlib's default font).
 """
 
+from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -104,5 +105,5 @@ fig.text(0.5, 0.022,
          ha="center", va="bottom", ma="center",
          fontsize=12.5, color=GRAY_NOTE)
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_batching.png',
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_batching.png",
             dpi=150, bbox_inches='tight')

@@ -6,6 +6,7 @@ the softmax distribution. Softmax is computed exactly; the logits are a
 didactic example tuned so the displayed probabilities match the book text.
 """
 
+from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 
@@ -75,4 +76,4 @@ fig.text(0.5, 0.012,
 
 fig.subplots_adjust(left=0.055, right=0.99, top=0.83, bottom=0.20, wspace=0.12)
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_temperature_softmax.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_temperature_softmax.png", dpi=150, bbox_inches='tight')

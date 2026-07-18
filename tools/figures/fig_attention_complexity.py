@@ -9,6 +9,7 @@ Values are exact: cost(n) = (n/1024)^p for p in {1, 2}.
 Only matplotlib + numpy; DejaVu Sans (matplotlib default).
 """
 
+from pathlib import Path
 import numpy as np
 import matplotlib
 
@@ -103,5 +104,5 @@ fig.text(0.5, 0.028,
          " The values are exact (this is the complexity itself).",
          ha="center", fontsize=10.5, color=FOOTNOTE)
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_attention_complexity.png',
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_attention_complexity.png",
             dpi=150, bbox_inches='tight')

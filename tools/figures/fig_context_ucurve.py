@@ -4,6 +4,7 @@ relevant passage in the context window (schematic, after Liu et al. 2023).
 Self-contained: matplotlib + numpy only, DejaVu Sans (matplotlib default).
 """
 
+from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -94,4 +95,4 @@ fig.text(0.005, 0.005,
 
 fig.tight_layout(rect=(0, 0.04, 1, 1))
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_context_ucurve.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_context_ucurve.png", dpi=150, bbox_inches='tight')

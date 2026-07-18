@@ -6,6 +6,7 @@ only the combination of all three enables data exfiltration.
 Self-contained: matplotlib + numpy only, DejaVu Sans (matplotlib default).
 """
 
+from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
@@ -152,7 +153,7 @@ ax.text(
 )
 
 fig.savefig(
-    r"/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_lethal_trifecta.png",
+    Path(__file__).resolve().parents[2] / "book" / "images" / "fig_lethal_trifecta.png",
     dpi=100,
     bbox_inches="tight",
 )

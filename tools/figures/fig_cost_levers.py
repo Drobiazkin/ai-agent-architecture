@@ -6,6 +6,7 @@ Recreated from the original edition with all labels in US English.
 Requires only matplotlib + numpy (DejaVu Sans, matplotlib's default font).
 """
 
+from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -69,5 +70,5 @@ fig.text(0.5, 0.014,
          "with no loss of output quality.",
          ha="center", va="center", fontsize=12.5, color=GRAY_NOTE)
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_cost_levers.png',
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_cost_levers.png",
             dpi=150, bbox_inches='tight')

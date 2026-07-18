@@ -5,6 +5,7 @@ Grouped bar chart contrasting a one-hot hard label with a teacher's softened
 Self-contained: matplotlib + numpy only, DejaVu Sans (matplotlib default).
 """
 
+from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
@@ -102,4 +103,4 @@ fig.text(
     ha="center", va="bottom", fontsize=11.5, color=FOOTNOTE, linespacing=1.4,
 )
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_distillation.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_distillation.png", dpi=150, bbox_inches='tight')

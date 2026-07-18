@@ -7,6 +7,7 @@ multi-agent research system report, 2025): relative token consumption of
 Only matplotlib + numpy; DejaVu Sans (matplotlib default).
 """
 
+from pathlib import Path
 import numpy as np
 import matplotlib
 
@@ -85,4 +86,4 @@ fig.text(
     ha="center", va="top", fontsize=10.5, color=FOOTNOTE,
 )
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_multiagent_tokens.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_multiagent_tokens.png", dpi=150, bbox_inches='tight')

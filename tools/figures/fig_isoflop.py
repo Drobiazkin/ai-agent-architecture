@@ -4,6 +4,7 @@ Hoffmann et al., 2022 ("Training Compute-Optimal Large Language Models").
 
 Self-contained: matplotlib + numpy only, default DejaVu Sans font.
 """
+from pathlib import Path
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -85,4 +86,4 @@ fig.text(
     linespacing=1.2,
 )
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_isoflop.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_isoflop.png", dpi=150, bbox_inches='tight')

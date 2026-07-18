@@ -5,6 +5,7 @@ Gray Swan Shade tool, "thinking" variant.
 Self-contained: matplotlib + numpy only, DejaVu Sans (matplotlib default).
 """
 
+from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -82,7 +83,7 @@ fig.text(0.5, 0.045, footnote, ha="center", va="top", fontsize=13, color=FOOT_GR
 fig.subplots_adjust(left=0.07, right=0.98, top=0.87, bottom=0.09)
 
 fig.savefig(
-    r"/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_injection_attempts.png",
+    Path(__file__).resolve().parents[2] / "book" / "images" / "fig_injection_attempts.png",
     dpi=100,
     bbox_inches="tight",
 )

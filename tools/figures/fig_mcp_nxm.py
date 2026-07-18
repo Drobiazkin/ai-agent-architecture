@@ -8,6 +8,7 @@ Canvas geometry is authored in the original figure's pixel space
 (2010 x 925 at 150 dpi) so positions can be read straight off the source.
 """
 
+from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Rectangle
 
@@ -110,4 +111,4 @@ ax.text(1505.5, 888.5,
         ha="center", va="center", fontsize=10, fontweight="bold",
         color=PURPLE_NOTE)
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_mcp_nxm.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_mcp_nxm.png", dpi=150, bbox_inches='tight')

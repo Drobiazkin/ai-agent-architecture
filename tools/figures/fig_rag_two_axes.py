@@ -6,6 +6,7 @@ combination, arrow axes, and a footnote on measuring the axes separately.
 Only matplotlib + numpy; DejaVu Sans (matplotlib default).
 """
 
+from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
@@ -104,4 +105,4 @@ ax.text(-1.97, -1.55,
         "the metric tells you which axis to fix.",
         ha="left", va="top", fontsize=10, color=MUTED)
 
-fig.savefig(r'/Users/aleksandrdrobiazkin/IdeaProjects/ai-agent-architecture/book/images/fig_rag_two_axes.png', dpi=150, bbox_inches='tight')
+fig.savefig(Path(__file__).resolve().parents[2] / "book" / "images" / "fig_rag_two_axes.png", dpi=150, bbox_inches='tight')
