@@ -59,6 +59,8 @@ Be honest about the price, because multi-agent is seductive and overrated. It **
 
 ![The price of autonomy: chat, a single agent, a multi-agent system](images/fig_multiagent_tokens.png)
 
+Both figures—15× and 4×—are quoted relative to chat, and that hides the one thing an architect who has already committed to an agent actually needs: multi-agent vs. a single agent = 15/4 ≈ **3.75×**. It is a rough estimate, not a measured ratio—15× and 4× are each a "typical" number from a different workload (research vs. chat), not one run across all three modes—but it does put the cost of coordination in perspective. The decomposition here is ours—from the two data points Anthropic measured, not something they published: ~4× above chat is the price of autonomy, the ReAct loop's context accumulating at O(k²) (§10.5); the remaining ~3.75× is the price of coordination in its own right: parallel workers plus a synthesis pass that re-reads all their results.
+
 The conclusion (Anthropic's, and practice's): multi-agent is justified for *parallelizable* tasks of high value (broad research with independent sub-tasks, for instance), but only when the value justifies the multiplied cost. That same point dissolves the apparent contradiction with the data on multi-agent systems' weak gains on typical benchmarks (Cemri et al., §14.4): both results are true—the gain is small on sequential tasks and large on broadly parallelizable ones, which is exactly where Anthropic measured. **Multi-agent is a distributed system with every coordination cost, plus nondeterministic nodes.** You do not move to it by default: first exhaust what a single agent and the workflow patterns can do (§11.8).
 
 ## 14.4 Deep Dive: the full taxonomy of agent failures

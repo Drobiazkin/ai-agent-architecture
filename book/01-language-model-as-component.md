@@ -30,7 +30,11 @@ Each of these properties drives design decisions: the context budget, the choice
 
 **Token**—the smallest unit the model operates on: not a character and not a word, but a **subword**, an entry in a vocabulary built by an algorithm of the **BPE (Byte-Pair Encoding)** family. The algorithm has two stages. Training the tokenizer (once, before the model itself is trained) starts from a base alphabet and iteratively merges the most frequent pair of adjacent units into a new one until the vocabulary reaches a target size (usually 30,000–130,000); the result is an ordered table of merges. Applying it segments text against that table deterministically: frequent words and morphemes encode to a single token, rare ones get split. That is how a fixed vocabulary covers an unbounded language without a special "unknown" token.
 
-**Byte-level BPE.** Modern models (starting with GPT-2) apply BPE not over Unicode characters but over UTF-8 **bytes**. This guarantees that *any* string is representable: an unseen character, an emoji, or corrupted input decomposes into a sequence of byte tokens. The consequence—true out-of-vocabulary does not exist; the "unknown" is simply encoded more expensively (more tokens). For Cyrillic this also explains the fragmentation: a character outside the basic Latin range takes several bytes, and therefore potentially several tokens.
+**Byte-level BPE.** Modern models (starting with GPT-2) apply BPE not over Unicode characters but over UTF-8 **bytes**. This guarantees that *any* string is representable: an unseen character, an emoji, or corrupted input decomposes into a sequence of byte tokens. The "unknown" is simply encoded more expensively—as more byte tokens—but is never lost (why this does away with the "unknown" token altogether, we come back to in the next paragraph). For Cyrillic this also explains the fragmentation: a character outside the basic Latin range takes several bytes, and therefore potentially several tokens.
+
+**Why there is no "unknown" token (`<UNK>`) in BPE.** Historically, vocabularies were **word-level**: a fixed list of, say, 50,000 frequent words, and anything not on the list—a typo, a neologism, a proper name, `kubectl`, an emoji—was folded into a service `<UNK>`. The operation is destructive: the original string cannot be recovered from `<UNK>`, all unfamiliar words become indistinguishable from one another, and the model can generate only words from the list. Byte-level BPE removes this not with a heuristic but *by construction*. The base alphabet is 256 bytes, and, as already noted, any string is by definition a sequence of bytes—hence guaranteed to decompose over the vocabulary. In mathematical terms, tokenization becomes a **total** function—defined on the entire space of inputs: an input for which it is undefined does not exist, even in principle. The merges layered on top are only an optimization: they shorten what is frequent, but they cannot make anything "unrepresentable." That is why there is simply no separate `<UNK>` in a byte-level BPE vocabulary.
+
+**Frequency, not morphology.** What sets the granularity of the split is **frequency**, not linguistics. `the` occurs in the corpus billions of times—the pairs `t`+`h`, then `th`+`e`, merge on the very earliest iterations, and the word becomes a single token; a rare word breaks into pieces that are frequent only on their own. An important caveat: BPE knows nothing about morphology and optimizes only for compression by frequency—the coincidence of token boundaries with morphemes is **emergent** (morphemes are frequent *because* they are reused, and BPE picks them up as a by-product). Hence artifacts like `недо|ста|точно` (the Russian for "insufficiently") instead of a meaningful `не|до|стат|очн|о`: the split is optimal by frequency, but is under no obligation to be meaningful.
 
 **Alternative tokenization algorithms.** Although BPE dominates modern LLMs (the GPT and LLaMA families), other powerful approaches exist, both historically and architecturally. What separates them is the mathematical criterion by which characters are merged into subwords or split apart.
 
@@ -127,16 +131,73 @@ The tokenizer and the network weights are **a single, unbreakable binary contrac
 
 **Special and control tokens.** Beyond subwords, the vocabulary holds service tokens: beginning and end of sequence (BOS/EOS), padding (pad), and, in chat models, **role and turn markup** (separator tokens of the form `<|im_start|>`, `<|im_end|>`, and analogues). Out of these a **chat template** is built—the exact structure in which the roles (system/user/assistant) are presented to the model. This is a practically important and often underrated skill: the model was trained on a *specific* markup format, and hand-assembling a prompt with the wrong separators degrades quality, sometimes into incoherence. The rule: use the tokenizer's stock chat template rather than constructing the markup by concatenating strings.
 
-Multimodal models (VLMs) integrate non-text data through **special anchor tokens** (for example, `<image>`). The images themselves are processed by a separate vision encoder (for example, ViT) and split into **visual patches**—fragments that are projected into vectors and, at the tensor level, embedded into the shared sequence.
+Multimodal models (VLMs) integrate non-text data through **special anchor tokens** (for example, `<image>`). The images themselves are processed by a separate vision encoder (for example, ViT) and split into **visual patches**—fragments that are projected into vectors and, at the tensor level, embedded into the shared sequence (the full assembly mechanics—Deep Dive at the end of the section).
 
-**Assembling a multimodal sequence (under the hood)**
-When a VLM takes an image and text as input, it forms a single array of embeddings. Take a concrete model—LLaVA-1.5, whose numbers are used throughout the rest of the section. At the tensor level the assembly looks like a concatenation of vectors:
+**Fertility and multilinguality.** *Fertility*—the average number of tokens per word—is a measurable property of the pair "tokenizer × language": close to one for English, substantially higher for Cyrillic. It directly sets cost and the *effective* context length: at an equal window size in tokens, Russian text exhausts it faster, so less meaning fits into the window. Which is why cost and context-budget estimates for a Russian-language system are made by counting tokens with the specific model over a representative sample of documents, not by counting characters: the phrase "автоматизация процессов" (23 characters) encodes to 6–9 tokens against 2–3 for "process automation," and across hundreds of thousands of documents that difference determines both the bill and how many fragments will fit into the window during retrieval (Part III). Made in advance, such an estimate makes cost and capacity predictable before launch.
+
+**Pitfalls that lead to bugs.** Several practical traps follow directly from how tokenization works:
+- *Numbers.* Multi-digit numbers are split into tokens inconsistently (one digit at a time, or in groups), which makes arithmetic and exact digit manipulation unreliable; for tasks involving numbers this gets designed for (check the result, move the computation out to an external tool).
+- *Whitespace and boundaries.* In most tokenizers a leading space is part of the token (` the` and `the` are different tokens). Hence the sensitivity to boundaries: breaking in the middle of a "natural" token keeps the model from continuing optimally—a problem solved at the decoding level (token healing, §5.3).
+- *Code.* Source code tokenizes inefficiently unless the tokenizer was adapted for it (indentation, long identifiers), which inflates both length and cost.
+- *Glitch tokens.* Rare strings that made it into the vocabulary but barely occurred during training (the `SolidGoldMagikarp` example, Rumbelow & Watkins, 2023) trigger anomalous behavior—a demonstration that the model's picture of text is mediated by the vocabulary.
+
+**Vocabulary size: the cardinality of the alphabet, not of the language.** A common misconception is that a larger vocabulary makes a model "more expressive." $V$ is the cardinality of the *alphabet*, not of the *language*: expressiveness comes from the combinatorics of sequences. The number of sequences of $L$ tokens over a vocabulary of size $V$ is $V^{L}$—an upper bound on the number of representable texts (decoding is many-to-one: different id sequences yield the same string, and $L$ tokens are not $L$ characters). The quantity grows exponentially with length and is astronomically large even at modest $V$ and $L$. Russian has all of 33 letters, and they suffice for the whole of Russian literature; at $V = 100{,}000$ and a context of 8000 positions the space works out to $V^{L} = 100{,}000^{8000}$—a ceiling so far above any practical need that it is never treated as a constraint at all. So the real $V$ is driven not by expressiveness but by an engineering trade-off.
+
+| Shift in $V$ | Consequence |
+|---|---|
+| $V$ larger | shorter sequences → cheaper attention (quadratic in length, §1.4) |
+| $V$ larger | a larger embedding matrix and output projection ($d_{model} \times V$) → more memory for parameters (§1.6) |
+| $V$ larger | each rare token occurs less often → its embedding is trained more poorly (the limit—glitch tokens above) |
+| $V$ smaller | higher fertility → the same thought takes more tokens (consequences—"Fertility and multilinguality" above) |
+
+Hence the 30,000–130,000 range—the equilibrium point of these forces, not a ceiling on expressiveness.
+
+**The cost of the vocabulary in parameters.** In Llama-3-8B, $V = 128{,}256$ and $d_{model} = 4096$ (checked against `config.json`: `vocab_size`, `hidden_size`). The embedding table alone is $V \times d_{model} = 128{,}256 \times 4096 = 525{,}336{,}576 \approx 525$ million trainable parameters (in bf16, 2 bytes per number—almost a gigabyte of weights; the exact calculation and the split between what is permanent and what is instantaneous are in §1.3). **Weight tying** is the technique of reusing one and the same matrix twice: as the embedding table at the input and as the (transposed) output projection at the output; you pay for those 525 million only once. GPT-2 and the small Llama-3.2-1B/3B do this (`tie_word_embeddings: true`). But Llama-3-8B does **not** tie its weights (`tie_word_embeddings: false`, checked): a separate output projection is another 525 million, and together that comes to ≈ 1.05 billion parameters—about **13% of the model's entire 8-billion-parameter budget**—spent on two tables at the model's edges rather than on the attention and FFN layers, where representations are transformed. That is the real ceiling on $V$: memory for parameters, not expressiveness.
+
+**$V$ lives in exactly two places—the input and the output.** Between them, across all 32 layers, where the work actually happens, the $V$ dimension is absent: there is only $d_{model}$. A single request runs through this sequence of shapes (the numbers are Llama-3-8B):
+
+    "Hello, world"
+       │  tokenization (deterministic merge table)
+       ▼
+    token ids            batch × seq            int64   ← V only as the id range (0…V−1)
+       │  look up rows of the embedding matrix (V × d_model)
+       ▼
+    dense vectors        batch × seq × 4096     float
+       │  32 layers of attention and FFN — the shape does NOT change (§1.4)
+       ▼
+    hidden state         batch × seq × 4096     float   ← all the semantics live here
+       │  multiply by the output projection (d_model × V)
+       ▼
+    logits               batch × seq × 128,256  float   ← V appears again
+       │  softmax over the last axis
+       ▼
+    probabilities        batch × seq × 128,256  (sum = 1)
+       │  sample from the last position (§1.7)
+       ▼
+    next-token id                               int64
+
+*In plain terms:* the model "thinks" not in the vocabulary but in a 4096-dimensional space of real numbers—that is where syntax, meaning, tone, and half-finished syntactic structures are encoded (§1.3, §1.4). $V$ is only the resolution of the *final step*: the projection of that rich, continuous state back down to a single discrete symbol. An analogy from networking: $V$ is the width of the alphabet on the wire (how many values a single "letter" of the format can take), $d_{model}$ is the richness of the structures held in memory behind that wire; the expressiveness of the system is set by the second, not the first. This is also where the information bottleneck of autoregression shows: from one step to the next, only the chosen discrete id is carried across, not the continuous state itself—the richness of the 4096-dimensional vector collapses into a single vocabulary token (§1.6, §1.7).
+
+**The vocabulary is fixed together with the model.** This is a design decision made when the model is built; when you use it, what matters is the consequence—$V$ cannot be changed, and it sets the model's fertility, and with it the cost and the capacity of the context (§2, §20). Tokenization also interacts with **structured output**: because the model emits tokens, constraining the output by a grammar or a schema (constrained decoding, §5.3) operates at the token level—it masks the inadmissible ids at each position.
+
+**Comparing segmentation approaches.**
+
+| Approach | Advantage | Drawback |
+|---|---|---|
+| By characters | Tiny vocabulary, no unknown words | Very long sequences, weak signal per unit |
+| By words | Short sequences | Huge vocabulary, unknown words on rare vocabulary |
+| Subwords (BPE / WordPiece / Unigram) | Balance of coverage and length, no true OOV (byte level) | Splitting artifacts, unevenness across languages |
+
+*Tools.* For counting and inspecting tokens, use `tiktoken` (OpenAI models) and the specific model's tokenizer via the `transformers` library; the key requirement is to use the same tokenizer the target model uses.
+
+### Deep Dive: assembling a multimodal sequence
+When a VLM takes an image and text as input, it forms a single array of embeddings. Take a concrete model—LLaVA-1.5, whose numbers are used throughout this Deep Dive. At the tensor level the assembly looks like a concatenation of vectors:
 
 $$E_{seq} = [E_{BOS}] \oplus \Phi(V_{patches}) \oplus E_{text} \oplus [E_{EOS}]$$
 
-**Two stages, not one.** The confusion around `<image>` dissolves once you separate in time what the developer writes from what the model receives.
+**Two stages, not one.** The confusion around `<image>` dissolves once you separate in time what the prompt string carries from what the model receives.
 
-*Stage 1 — the prompt string (`<image>` is present here).* The developer submits text with a single placeholder token:
+*Stage 1 — the prompt string (`<image>` is present here).* The input is text with a single placeholder token:
 
 ```
 USER: <image>
@@ -149,12 +210,12 @@ What is in the picture? ASSISTANT:
 
 Where:
 * **[BOS] (Begin of Sequence):** Always stands at the start. In the Transformer architecture it does not "initialize the hidden state" (as in the old RNNs) but exhibits the **attention sink** property: softmax's excess attention emergently accumulates on the initial positions (Xiao et al., StreamingLLM, 2023), which stabilizes the attention mechanism. This is not a role assigned to the token but a consequence of the architecture; the [BOS] token's K/V are simply cached first during prefill, as for any token.
-* **$\Phi(V_{patches})$:** Visual patches passed through a projection adapter (an MLP or a Q-Former). The adapter is what brings the dimensionality of the visual features to the dimensionality of the LLM's text embeddings ($D_{model}$). The patches themselves arise geometrically: a ViT cuts the image with a regular grid of squares of fixed size $P \times P$ pixels and linearly projects each square into a single vector. Typical $P$ is 14, 16, or 32; in a model's name it is the second number (`ViT-L/14`—"Large, patch 14"). Hence the main consequence, which we will come back to below: the number of patches is not a constant of the model but a function of the input resolution and $P$.
+* **$\Phi(V_{patches})$:** Visual patches passed through a projection adapter (an MLP or a Q-Former). The adapter is what brings the dimensionality of the visual features to the dimensionality of the LLM's text embeddings ($d_{model}$). The patches themselves arise geometrically: a ViT cuts the image with a regular grid of squares of fixed size $P \times P$ pixels and linearly projects each square into a single vector. Typical $P$ is 14, 16, or 32; in a model's name it is the second number (`ViT-L/14`—"Large, patch 14"). Hence the main consequence, which we will come back to below: the number of patches is not a constant of the model but a function of the input resolution and $P$.
 * **[EOS] (End of Sequence):** Placed at the end of training examples. At inference (generation) time the appearance of this token is a strict, deterministic trigger to stop the autoregressive loop (autoregressive decoding).
 
-Inside the model's hidden space (embedding space) there is no difference between text and image. The identifiers `[BOS]` and `[EOS]` are converted into standard trainable vectors of the same dimensionality $D_{model}$ as the projected visual patches. Thanks to that mathematical alignment, self-attention ($Softmax(QK^T / \sqrt{d})V$) can compute attention weights among service tokens, printed words, and image fragments seamlessly, handling them as one continuous context.
+Inside the model's hidden space (embedding space) there is no difference between text and image. The identifiers `[BOS]` and `[EOS]` are converted into standard trainable vectors of the same dimensionality $d_{model}$ as the projected visual patches. Thanks to that mathematical alignment, self-attention ($Softmax(QK^T / \sqrt{d})V$, covered in §1.4) can compute attention weights among service tokens, printed words, and image fragments seamlessly, handling them as one continuous context.
 
-**$\oplus$ is gluing, not addition.** The symbol $\oplus$ denotes **concatenation**—assembling a sequence end to end. The rejected alternative is element-wise addition of vectors. *Adding* → means writing the sum into the same array cells: the shape does not change, but text and image get mixed into the same numbers, and the addends cannot be recovered from the sum—self-attention further up the stack would then be fundamentally unable to separate the image from the words. *Gluing* → means lengthening the sequence: each modality takes its own positions and stays separately addressable. That makes the $D_{model}$ requirement from the paragraph above read exactly: the vectors' width has to match so the rows line up in one table (element-wise `+` also requires matching shape, §A.3)—but matching width does not mean the vectors get added.
+**$\oplus$ is gluing, not addition.** The symbol $\oplus$ denotes **concatenation**—assembling a sequence end to end. The rejected alternative is element-wise addition of vectors. *Adding* → means writing the sum into the same array cells: the shape does not change, but text and image get mixed into the same numbers, and the addends cannot be recovered from the sum—self-attention further up the stack would then be fundamentally unable to separate the image from the words. *Gluing* → means lengthening the sequence: each modality takes its own positions and stays separately addressable. That makes the $d_{model}$ requirement from the paragraph above read exactly: the vectors' width has to match so the rows line up in one table (element-wise `+` also requires matching shape, §A.3)—but matching width does not mean the vectors get added.
 
 At the PyTorch level the assembly is one operation, a glue along the token axis:
 
@@ -167,7 +228,7 @@ At the PyTorch level the assembly is one operation, a glue along the token axis:
     E_seq = torch.cat([e_bos, v_patches, e_text, e_eos], dim=0)
     # E_seq.shape == [598, 4096]
 
-**How to read the shapes.** The first number is `seq`, the count of token rows; the second is $D_{model}$, the width of one token's vector (4096 in Vicuna-7B—the base LLM in LLaVA-1.5; the same numbers as in the trace in §1.4). `dim=0` is the index of the axis along which the growth happens; here it is the token axis. The arithmetic: 1 + 576 + 20 + 1 = **598** rows, and 4096 stays 4096. *In plain terms:* gluing extends the table downward but does not widen it sideways—there are more tokens, and each token's vector is unchanged. And unlike `+`, concatenation does not require matching size along the axis it grows on (576 and 20 coexist perfectly well)—only along all the others.
+**How to read the shapes.** The first number is `seq`, the count of token rows; the second is $d_{model}$, the width of one token's vector (4096 in Vicuna-7B—the base LLM in LLaVA-1.5; the same numbers as in the trace in §1.4). `dim=0` is the index of the axis along which the growth happens; here it is the token axis. The arithmetic: 1 + 576 + 20 + 1 = **598** rows, and 4096 stays 4096. *In plain terms:* gluing extends the table downward but does not widen it sideways—there are more tokens, and each token's vector is unchanged. And unlike `+`, concatenation does not require matching size along the axis it grows on (576 and 20 coexist perfectly well)—only along all the others.
 
 **The cost of an image in tokens.** Of those 598 rows, 576 are the image: 96% of the sequence against 3% for the prompt text. An image costs not "one embedding" but on the order of 576 tokens, and for attention that is quadratic in the full length (§1.4). That is what gives meaning to the choice of adapter, named $\Phi(V_{patches})$ in the walkthrough above. The **MLP** (a small fully connected network) in LLaVA-1.5 works per patch: 576 patches in yield 576 vectors out—the count does not change, the adapter only fits the width. A **resampler**, rather than passing patches through one-to-one, runs them through a fixed set of trainable **query vectors**: cross-attention, in which each query "reads out" from all the patches what it needs—and returns exactly as many rows as it has queries, regardless of the input resolution. The original **Q-Former** (BLIP-2) has 32 queries; the **Qwen-VL** adapter (officially, a Position-aware Vision-Language Adapter; single-layer cross-attention) has 256. The spread of 32 against 256 under identical mechanics is precisely the resampler invariant: with a fixed-query adapter the count of visual tokens is set by the adapter, not by the input resolution; with a per-patch MLP it is the reverse—the count is inherited wholesale from the resolution. Choosing an adapter is choosing the cost of an image in tokens, not an implementation detail.
 
@@ -190,26 +251,6 @@ $$N_{patches} = \frac{H \times W}{P^{2}}, \qquad N_{slots} = \frac{N_{patches}}{
 
 **Consequence: resolution is a budget line item.** In $N_{patches} = HW/P^{2}$ the resolution sits in the numerator as a **product**, so doubling the *side* of the image quadruples the patch count. And attention is quadratic in sequence length (§1.4)—so that factor of four becomes ×16 the work wherever the visual part dominates. Even without a doubling the count is sobering: 576 visual positions on top of a 1000-token prompt give $seq = 1576$—the length grew by 58%, the attention work by a factor of about $(1576/1000)^{2} \approx 2.5$. **Invariant:** resolution is a parameter of the context budget, not only of image quality; resizing down to the lowest resolution at which the task still works cuts $seq$ and the quadratic price behind it. A caveat: this knob does not always exist, and the reason is the input, not the adapter. LLaVA-1.5's input is fixed, and an image costs 576 patches whether it holds a schematic or an empty background; in models with dynamic resolution (Qwen2-VL) $N$ grows with the resolution up to a set ceiling—and there resolution really is a knob you can turn.
 
-**Fertility and multilinguality.** *Fertility*—the average number of tokens per word—is a measurable property of the pair "tokenizer × language": close to one for English, substantially higher for Cyrillic. It directly sets cost and the *effective* context length: at an equal window size in tokens, Russian text exhausts it faster, so less meaning fits into the window. Which is why cost and context-budget estimates for a Russian-language system are made by counting tokens with the specific model over a representative sample of documents, not by counting characters: the phrase "автоматизация процессов" (23 characters) encodes to 6–9 tokens against 2–3 for "process automation," and across hundreds of thousands of documents that difference determines both the bill and how many fragments will fit into the window during retrieval (Part III). Made in advance, such an estimate makes cost and capacity predictable before launch.
-
-**Pitfalls that lead to bugs.** Several practical traps follow directly from how tokenization works:
-- *Numbers.* Multi-digit numbers are split into tokens inconsistently (one digit at a time, or in groups), which makes arithmetic and exact digit manipulation unreliable; for tasks involving numbers this gets designed for (check the result, move the computation out to an external tool).
-- *Whitespace and boundaries.* In most tokenizers a leading space is part of the token (` the` and `the` are different tokens). Hence the sensitivity to boundaries: breaking in the middle of a "natural" token keeps the model from continuing optimally—a problem solved at the decoding level (token healing, §5.3).
-- *Code.* Source code tokenizes inefficiently unless the tokenizer was adapted for it (indentation, long identifiers), which inflates both length and cost.
-- *Glitch tokens.* Rare strings that made it into the vocabulary but barely occurred during training (the `SolidGoldMagikarp` example, Rumbelow & Watkins, 2023) trigger anomalous behavior—a demonstration that the model's picture of text is mediated by the vocabulary.
-
-**Vocabulary size as a trade-off.** A larger vocabulary shortens sequences (cheaper for attention, §1.4) but grows the embedding and output-projection matrices—memory for parameters (§1.6). This is a design decision made when the model is built; when you use it, what matters is the consequence: vocabulary size is fixed together with the model and determines its fertility. Tokenization also interacts with **structured output**: because the model emits tokens, constraining the output by a grammar or a schema (constrained decoding, §5.3) operates at the token level and accounts for which tokens are admissible at each position.
-
-**Comparing segmentation approaches.**
-
-| Approach | Advantage | Drawback |
-|---|---|---|
-| By characters | Tiny vocabulary, no unknown words | Very long sequences, weak signal per unit |
-| By words | Short sequences | Huge vocabulary, unknown words on rare vocabulary |
-| Subwords (BPE / WordPiece / Unigram) | Balance of coverage and length, no true OOV (byte level) | Splitting artifacts, unevenness across languages |
-
-*Tools.* For counting and inspecting tokens, use `tiktoken` (OpenAI models) and the specific model's tokenizer via the `transformers` library; the key requirement is to use the same tokenizer the target model uses.
-
 *Sources.* R. Sennrich, B. Haddow, A. Birch, "Neural Machine Translation of Rare Words with Subword Units" (2016)—BPE. M. Schuster, K. Nakajima, "Japanese and Korean Voice Search" (2012)—WordPiece. Y. Wu et al., "Google's Neural Machine Translation System" (2016)—the likelihood criterion of WordPiece. J. Devlin et al., "BERT: Pre-training of Deep Bidirectional Transformers" (2018)—BERT's corpus and vocabulary. HuggingFace LLM Course, ch. 6.6, "WordPiece tokenization"—the teaching implementation of the metric on raw counts. T. Kudo, "Subword Regularization" and SentencePiece (2018)—Unigram LM. A. Karpathy, "Let's build the GPT Tokenizer" (2024). Rumbelow & Watkins, "SolidGoldMagikarp" (2023). H. Liu, C. Li, Y. Li, Y. J. Lee, "Improved Baselines with Visual Instruction Tuning" (arXiv:2310.03744, 2023)—LLaVA-1.5: CLIP-ViT-L-336px + a two-layer MLP connector. J. Bai et al., "Qwen-VL" (arXiv:2308.12966, 2023)—Position-aware Vision-Language Adapter: single-layer cross-attention, compression of the visual run to 256, delimiters `<img>`/`</img>`. J. Li, D. Li, S. Savarese, S. Hoi, "BLIP-2" (arXiv:2301.12597, 2023), §3.1—Q-Former: 32 queries of dimensionality 768. S. Zhang, Q. Fang, Z. Yang, Y. Feng, "LLaVA-Mini" (2025)—24×24 = 576 visual tokens in LLaVA-1.5. A. Dosovitskiy et al., "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale" (arXiv:2010.11929, 2021)—ViT and the patch grid $N = HW/P^2$. P. Wang et al., "Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution" (arXiv:2409.12191, 2024)—dynamic resolution, 2×2 patch merging, delimiters `<|vision_start|>`/`<|vision_end|>`, the authors' own estimate "224×224 at patch_size=14 → 66 tokens." The vocabulary and geometry were checked against vendor artifacts: `llava-hf/llava-1.5-7b-hf` (`added_tokens.json`—only `<image>` 32000 and `<pad>` 32001; `config.json`—`image_size: 336`, `patch_size: 14`), `liuhaotian/llava-v1.5-7b` (`config.json`—`mm_use_im_start_end: false`), `Qwen/Qwen2-VL-7B-Instruct` (`config.json`—`vision_start_token_id: 151652`, `vision_end_token_id: 151653`; `preprocessor_config.json`—`patch_size: 14`, `merge_size: 2`).
 
 ## 1.3 Embeddings and the vector space
@@ -227,10 +268,10 @@ Embedding matrix (bytes) = V · d_model · bytes
 ```
 
 - `V`—vocabulary size; in Llama 3, 128,256 tokens.
-- `d_model`—the dimensionality of the model's internal vector; in Llama 3 8B, 4096.
+- `d_model`—the dimensionality of the model's internal vector; in Llama-3-8B, 4096.
 - `bytes`—bytes per number; at bf16, 2.
 
-Substituting: 128,256 · 4096 · 2 = 1,050,673,152 bytes ≈ 0.98 GB—almost a gigabyte of weights for the lookup table alone (and that is without the output projection: in Llama 3 8B it is a separate matrix of the same size, the weights are not tied, §1.2). Instantaneous is that table's **output**: one token's vector is 4096 · 2 = 8 KB of activations, which live within a single forward pass and are freed after it. The ratio of permanent to instantaneous here is exactly `V`: one row against the table's 128,256. *In plain terms:* what sits in accelerator memory forever is a **vocabulary of vectors**, while a particular token's vector is a consumable: computed, passed up the stack, thrown away. What survives across decode steps is not it but the KV-cache (§1.6).
+Substituting: 128,256 · 4096 · 2 = 1,050,673,152 bytes ≈ 0.98 GB—almost a gigabyte of weights for the lookup table alone (and that is without the output projection: in Llama-3-8B it is a separate matrix of the same size, the weights are not tied, §1.2). Instantaneous is that table's **output**: one token's vector is 4096 · 2 = 8 KB of activations, which live within a single forward pass and are freed after it. The ratio of permanent to instantaneous here is exactly `V`: one row against the table's 128,256. *In plain terms:* what sits in accelerator memory forever is a **vocabulary of vectors**, while a particular token's vector is a consumable: computed, passed up the stack, thrown away. What survives across decode steps is not it but the KV-cache (§1.6).
 
 A vector in a RAG index is built exactly the other way around: in pgvector it takes `4 · d + 8` bytes, that is ≈4 KB at `d` = 1024 (bge-m3), and it is written to disk once—to lie there for months, until the embedder changes and everything is reindexed (§8.8). Per vector, both cases come to the same order of magnitude (kilobytes), but the lifetimes differ by orders: milliseconds against months.
 
@@ -312,8 +353,8 @@ Step by step:
 **Attention variants and what motivates them.** What follows are ways to economize on KV-cache memory while holding quality:
 - **MHA (multi-head attention)**—the base variant: every head has its own K and V. Maximum expressiveness and maximum KV-cache.
 - **MQA (multi-query attention)**—all heads share a single set of K, V. Minimum KV-cache at the price of a noticeable loss of quality.
-- **GQA (grouped-query attention)**—the compromise: heads are split into groups, and within a group they share a set of K, V. Substantially less KV-cache at quality close to MHA; used in Llama 2 (the larger 34B/70B variants), in all sizes of Llama 3, in Mistral, and others.
-- **MLA (multi-head latent attention)**—compressing K, V into a low-dimensional latent representation from which they are reconstructed; shrinks the KV-cache further. Used in DeepSeek-V2/V3.
+- **GQA (grouped-query attention)**—the compromise: heads are split into groups, and within a group they share a set of K, V. Cuts the KV-cache by the ratio of attention heads to K/V groups—in Llama-3-8B, 32 to 8, a factor of four—at quality close to MHA; used in Llama 2 (the larger 34B/70B variants), in all sizes of Llama 3, in Mistral, and others.
+- **MLA (multi-head latent attention)**—caches not K and V themselves (a separate set per head), but one shared low-dimensional latent vector—a compressed representation of K and V—from which they are reconstructed by projection: the saving is in what is *stored*, not in what is computed. In DeepSeek-V2 this cut the KV-cache by 93.3% relative to their own 67B model (which itself already uses GQA, not MHA) at 5.76× the throughput. Used in DeepSeek-V2/V3.
 
 **Positional encoding and RoPE.** Attention itself is order-invariant (an operation over a set), so positional information is supplied separately. The modern standard is **RoPE (Rotary Position Embedding)**: the Q and K vectors are rotated by an angle proportional to the position, so that the dot product between positions `i` and `j` depends on their difference `i − j`—that is, the *relative* position is what gets encoded. The mechanics in two lines: the vector's components are grouped into pairs, and each pair is rotated in its own plane by an angle θ_i·pos with its own frequency θ_i (fast frequencies encode local order, slow ones long-range context); and since rotating Q by α and K by β changes their dot product as a function of the difference (α − β), attention sees only the relative offset. RoPE's practically significant property is its ability to extrapolate to lengths not seen during training; context is extended by interpolating the frequencies (NTK-aware scaling, YaRN[^t-yarn]), but that too has a limit—beyond the training lengths quality degrades (related to §1.8).
 
@@ -343,8 +384,8 @@ $$R = w \cdot L$$
 |---|---|---|
 | MHA (multi-head) | Each head has its own K/V | Baseline; maximum KV-cache |
 | MQA (multi-query) | One set of K/V for all heads | Minimum KV-cache, loss of quality |
-| GQA (grouped-query) | Groups of heads share K/V | Less KV-cache at quality close to MHA |
-| MLA (multi-head latent) | K/V compressed into a latent space | Less KV-cache still |
+| GQA (grouped-query) | Groups of heads share K/V | In Llama-3-8B **×4** smaller, quality ≈ MHA |
+| MLA (multi-head latent) | K/V compressed into a latent space | **−93.3%** (DeepSeek-V2 vs. their own 67B-GQA) |
 | Sliding-window | Attention within a window of the last `w` positions | `O(n·w·d)` instead of `O(n²·d)`; long-range links not directly but by accumulation across layers (`w·L`) |
 | FlashAttention | Exact computation without materializing `n×n` | Dramatically faster and leaner (a systems optimization, not an architectural one) |
 

@@ -21,6 +21,11 @@
 - **KV-cache**—the cache of attention keys/values, kept so they need not be recomputed during autoregression; the biggest consumer of memory after the weights. (→ Chapter 1)
 - **Prefill / Decode**—the two phases of inference: processing the prompt in parallel and generating sequentially. (→ Chapter 1)
 - **Logits**—the model's raw (pre-softmax) scores for every token in the vocabulary.
+- **V (vocabulary size)**—an integer: how many tokens are in the tokenizer's vocabulary (their ids run from 0 to V−1). It is the cardinality of the *alphabet*, not of the language—expressiveness comes from the combinatorics of sequences, not from the size of the vocabulary. (→ Chapter 1)
+- **d_model (hidden size)**—how many real numbers describe one token inside the model (4096 in Llama-3-8B, for example). This, not the vocabulary size, is where all the semantics live. (→ Chapter 1)
+- **Output projection (LM head)**—the `d_model × V` matrix that turns the hidden state into V logits (one per vocabulary token) before softmax. (→ Chapter 1)
+- **Weight tying**—reusing a single matrix both as the embedding table and as the output projection; it halves those parameters. GPT-2 and the small Llama-3.2-1B/3B tie; Llama-3-8B/70B do not. (→ Chapter 1)
+- **Fertility**—the average number of tokens per word for a "tokenizer × language" pair; markedly higher for Cyrillic than for English—the same meaning costs more and exhausts the context faster. (→ Chapter 1)
 - **Temperature / Top-p / Top-k**—decoding parameters that control how random the token choice is; the "determinism knob." (→ Chapter 1)
 - **Context window**—the maximum number of tokens the model processes at once; a finite budget. (→ Chapter 1)
 - **Hallucination**—a confidently generated but false statement; a consequence of predicting plausibility rather than truth. (→ Chapter 1)

@@ -6,7 +6,7 @@
 
 **Author:** Aleksandr Drobiazkin <aleksandr.drobiazkin@gmail.com>
 **Contact:** LinkedIn https://www.linkedin.com/in/aleksandr-drobiazkin-501bab263
-**This revision fixed:** 2026-07-17 (UTC)
+**This revision fixed:** 2026-07-20 (UTC)
 
 Copyright (c) 2026 Aleksandr Drobiazkin. Licensed under CC BY-SA 4.0 (prose, figures, diagrams)
 and MIT (code samples and `tools/`) — see `LICENSE`, `LICENSE-CODE`, and `NOTICE`.
@@ -58,10 +58,10 @@ and it does not need to.
 
 ```
 # The book — sources (English edition)
-d918d01a613f6729a5833b6771cba3ab49f48757bd24ccff4b48118d7fbd6a05  book/01-language-model-as-component.md
+b7ca05852618a6a72521bb8326eea3dec0a880e56b060af51d14477d14f0790a  book/01-language-model-as-component.md
 ad9b7aa8db8d83a61ffdc21c2f6fcb31bfcaa64dcfef354620c9e46b6d69f498  book/02-economics.md
 2199f408cc408d2f55788028e185f8de51e592004b08906ffcc2ab058d2e6d1b  book/03-prompt-engineering.md
-9b4fcc27d74451629024dff28d77f7cc44447e4c649999138d36d2b05a75f88d  book/04-context-engineering.md
+8c2b3342f7938a9f416f7a9ec26d2382ebfc43dc072ff34c0a934c93cf48e4ac  book/04-context-engineering.md
 a4e8054ba2b33c14d1b668aa0236aa083c12bbbd0f89589eb87e76042a0d249c  book/05-structured-output.md
 f59dd912c55430340e7aa49e1406e8cd612c61ba163964ce66fd530407c905d7  book/06-rag-introduction.md
 f36392c15be0a8eae34613e8e33f68c079554b7eb4848254c71cfa755f46e581  book/07-retrieval-patterns.md
@@ -69,18 +69,18 @@ f36392c15be0a8eae34613e8e33f68c079554b7eb4848254c71cfa755f46e581  book/07-retrie
 0639228ff85f25ebb231bc580adedf18612ebc4fae47c85a4f0be1a3e1d602cc  book/09-rag-evaluation.md
 417a1ba325cb2240931628fbc22c92dba55c9b6bf97bc36d90fa93f2257ec2bc  book/10-agent-as-distributed-system.md
 55c7744f89f212392320c0a8f08f1cd4ad932ef54ca2d4fc44c25f4cd3eb2754  book/11-agent-patterns.md
-240913e7345ca034e5424fbc9abab9db58362c8642f61b0257f89e7cdbacdecb  book/12-tool-calling.md
+e5bf40b35f42ae576c594097a273e66acfef543a007f7adc12b3a84694f4ccc9  book/12-tool-calling.md
 2a7686260a0ec7bda25ba47614f80ac4c6fb883db79f1b1971cdb897d3c0d95b  book/13-memory-and-reasoning.md
-5afdaab4b2bd0886e3d5d518675258bb125d589ff77120e950ebad80663a7399  book/14-multi-agent-systems.md
+657b4b1f2c30b0f512138b4eb6cd00b3c1d109b0d987462f8c04013071ee79f8  book/14-multi-agent-systems.md
 ddd10f71f235b0d177c12a6e519ea39204b10fc4481fbc5fe7386ef0be540d97  book/15-mcp.md
 719dc763f296ca6ae6014a30356e1a195a34b83e293dc45ca2159763c8423ab7  book/16-jvm-stack.md
 900e21dd3fad65ef3c0d2ebb600e927d25bd5997bb0aa991a044b24390f7c8a8  book/17-evaluation.md
 dc298af07fd5617aac0290cc78ea71afaa1e06a46e4d03acdf45c9198c593fbb  book/18-observability.md
-1df607d9fdde41271e265299f86dd58d1a429f9bb073f243ef3f3c559ae062df  book/19-security.md
+4dbde38e24511f61bb228f9ae49d8ab66e83990f80541a4e07ccf3b438147ddc  book/19-security.md
 ff5a0cb47ed02b89f8abf56782601cce80280f6bbf9baf50dfc5c9cd675da542  book/20-cost-and-latency.md
 83e5d4ddcfc1ed92befa55f8355c9a8080f6150221b1d2ce87d7a24028491ee1  book/21-fine-tuning.md
 b388adbbf824146814eff637ee2ddd6feecec4f92d75686e4be3c6034f71b949  book/22-serving-open-models.md
-263b54e5002a52853387f472751203a93fcc8e348bc6b3844072d5882742d3eb  book/23-pre-training.md
+7f4c08da4cc4f42187308596a3fab46f0c60de6e8a1686a801a820c56c2df055  book/23-pre-training.md
 58db2e9401ff8fd1dc24597233111ca7ded15c994beaf2604a0aba229c15eb69  book/24-reference-architecture.md
 31766056860611b6d90e5a5fcbccfbb8585a614d1ee16175f760f860483d4eb2  book/25-organizational-adoption.md
 a7c57b257b99ea88ca5f98c402e0bf16b2d496a788f0c509b01cfc2dc1205ba7  book/26-worked-example.md
@@ -90,7 +90,7 @@ a7c57b257b99ea88ca5f98c402e0bf16b2d496a788f0c509b01cfc2dc1205ba7  book/26-worked
 87ebcfb2b46e4cdc10aff1531301d519a6b7768156aa292232db4115ee2cc474  book/appendix-d-preflight-checklist.md
 9176ec3fe52158206df061548d4aa29eb85b01bee6b7c28fcf615e3ce7f666b9  book/appendix-e-bibliography.md
 ae4a63a2e7e1590e2edbb332d9755b618d69ce591685dfd9bdd6415266b46810  book/front-matter.md
-49672716a34d9c3b871bfa56ddf43a8f7e359151fe8b4b854fa2a577391fc511  book/glossary.md
+6e48b30c9a2837d23e24e2fe2dc024965a3e39b2bd58ddf3940337bcb10de4f3  book/glossary.md
 609037a6fafe711c1a6a249e4dfeef48888414e528564c26ca878c3d34113e71  book/toc.md
 
 # The course — sources (English edition)
@@ -147,8 +147,8 @@ b9d9cc9dc772fc2b3ce222fd4a1c5e2da82ffd18feea075c1fce3a8258c16c48  tools/figures/
 0f19c9b5a612308e1b28544ccc95ce83b66d9ac3b7df3572d1334af83410c7bd  tools/figures/fig_tokens_per_param.py
 
 # Built artifacts (English edition)
-3891c33d813abcf0e4790854abad3858d49bcb35c47a12c9b9162108161a6901  ai-agent-architecture-book.html
-9252fc462eb95d62db8a807be887e195fae52acb59152082b4447a1fbf8b86af  ai-agent-architecture-book.pdf
+f7c37c916d9376ce0de2dc2f9531af285b644e7b7d435961993de4c6ac818838  ai-agent-architecture-book.html
+80d380bc472709be19da44771ae9f77a501db0bf179c7c2da97e03e1cf3ed730  ai-agent-architecture-book.pdf
 891c31d82bfb525ff33f3b396e8fdd35a553508b3657380cd3e28fc45cc245ed  ai-agent-practice-course.html
 07035c92b4c69dd797605b2cdfc80060ae8ef0ea4f53860a4170afe0a6942324  ai-agent-practice-course.pdf
 
@@ -169,9 +169,9 @@ f641f3ccd97027273b2c09ab50a2a45ed2c94adb25388e1595137f576543e610  build/package.
 5b37e8f12633a520a9c5ba7fa56e40dc8fa5b2b20fe0a5e04fe4b08bb749f27a  build/third_party/KATEX-LICENSE
 
 # Russian edition — sources, figures, and artifacts
-bfda78e7af71b8ac7230020ad953d2ad47a8d6226a8368e5e3b08a6b4cec8a5d  ru/ai-agent-architecture-book-v2.md
-d2e0c91afced82ced1547b90dd5defd88084c3dad334017ec5d38f56316907cc  ru/ai-agent-architecture-book-v2.html
-f0ae3f9107b72b8eddc8026d2bdbe730a21da93d3d9c27e3f91e3233e6b62a75  ru/ai-agent-architecture-book-v2.pdf
+a13ae7077748dea2fc9513b02291c796aad4ccbba9fb33cbdac31930b5e4db8e  ru/ai-agent-architecture-book-v2.md
+abdf50eab1a94795bb0c9d432a10cb1f64ead7a87da9946d0a9b4e8b038a789f  ru/ai-agent-architecture-book-v2.html
+cb3369750f2c220b743325f66d904373c785c1a45fa7d178b28b47b28262da5b  ru/ai-agent-architecture-book-v2.pdf
 d4b062fc7990e5e0bafcc745299ef3e05d946a201cbd3e87a0f3991106c4c98f  ru/ai-agent-practice-course.md
 a83cfd41ca7af140ed25534efc0bc36f97bb7cc6e45a6750627d1c812f418cb3  ru/ai-agent-practice-course.html
 a02892c898843c2f7ade3550bda8152e7b8a1813685fe4db14fb698b5c8d61a2  ru/ai-agent-practice-course.pdf
@@ -222,7 +222,7 @@ after stamping to pull the confirmed attestation.
 
 ## OpenTimestamps
 
-- **2026-07-17** — this revision: `PROVENANCE.md.ots` covers this manifest, and this manifest
+- **2026-07-20** — this revision: `PROVENANCE.md.ots` covers this manifest, and this manifest
   covers every file listed above by hash — the manuscripts of both editions, the figures and
   the scripts that generate them, the typesetting pipeline, and the built artifacts. Individual
   files are not stamped separately; the manifest's stamp covers the set.
